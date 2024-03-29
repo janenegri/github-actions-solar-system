@@ -11,27 +11,66 @@ env:
   MONGO_USERNAME: 'superuser'
   MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
 jobs:
-    unit-testing:
-        name: Unit Testing
-        runs-on: ubuntu-latest
-        steps:
-        - name: Checkout Repository
-          uses: actions/checkout@v4
+    # unit-testing:
+    #     name: Unit Testing
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #     - name: Checkout Repository
+    #       uses: actions/checkout@v4
 
-        - name: Setup NodeJS Version
-          uses: actions/setup-node@v3
-          with:
-            node-version: 20
+    #     - name: Setup NodeJS Version
+    #       uses: actions/setup-node@v3
+    #       with:
+    #         node-version: 20
     
-        - name: Install Dependencies
-          run: npm install
+    #     - name: Install Dependencies
+    #       run: npm install
     
-        - name: Unit Testing
-          run: npm test
+    #     - name: Unit Testing
+    #       run: npm test
           
-        - name: Archive Test Result
-          if: always()
-          uses: actions/upload-artifact@v3
+    #     - name: Archive Test Result
+    #       if: always()
+    #       uses: actions/upload-artifact@v3
+    #       with:
+    #         name: Mocha-Test-Result
+    #         path: test-results.xml
+    # code-coverage:
+    #   runs-on: ubuntu-latest
+    #   steps:
+    #     - name: Checkout Repository
+    #       uses: actions/checkout@v4
+
+    #     - name: Setup NodeJS Version
+    #       uses: actions/setup-node@v3
+    #       with:
+    #         node-version: 18
+
+    #     - name: Install Dependencies
+    #       run: npm install
+        
+    #     - name: Code Coverage
+    #       run: npm run code-coverage
+    #       continue-on-error: true
+
+    #     - name: Archive Code Coverage Result
+    #       uses: actions/upload-artifact@v3
+    #       with:
+    #         name: Code-Coverage-Result
+    #         path: coverage
+    #         retention-days: 5
+    dev-deploy:
+      name: Deploiy to Dev
+      runs-on: ubuntu-latest
+      environment: 
+        name: development
+      steps:
+        - uses: checkout/checkout@v4
+        - uses: azure/setup-kubectl@v3
           with:
-            name: Mocha-Test-Result
-            path: test-results.xml
+            version: v1.26.0
+        - uses: azure/k8s-set-context@v3
+          with:
+            method: kubeconfig
+            kubeconfig: '${{ secrets.KUBECONFIG }}'
+        - run: kubectl version --short -o yaml
